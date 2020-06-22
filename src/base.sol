@@ -30,21 +30,23 @@ contract DSTokenBase is ERC20, DSMath {
         _supply = supply;
     }
 
-    function totalSupply() public view returns (uint) {
+    function totalSupply() override public view returns (uint) {
         return _supply;
     }
-    function balanceOf(address src) public view returns (uint) {
+    function balanceOf(address src) override public view returns (uint) {
         return _balances[src];
     }
-    function allowance(address src, address guy) public view returns (uint) {
+    function allowance(address src, address guy) override public view returns (uint) {
         return _approvals[src][guy];
     }
 
-    function transfer(address dst, uint wad) public returns (bool) {
+    function transfer(address dst, uint wad) override public returns (bool) {
         return transferFrom(msg.sender, dst, wad);
     }
 
     function transferFrom(address src, address dst, uint wad)
+        override
+        virtual
         public
         returns (bool)
     {
@@ -62,7 +64,7 @@ contract DSTokenBase is ERC20, DSMath {
         return true;
     }
 
-    function approve(address guy, uint wad) public returns (bool) {
+    function approve(address guy, uint wad) virtual override public returns (bool) {
         _approvals[msg.sender][guy] = wad;
 
         emit Approval(msg.sender, guy, wad);

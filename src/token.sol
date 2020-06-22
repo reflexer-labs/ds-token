@@ -37,11 +37,12 @@ contract DSToken is DSTokenBase(0), DSStop {
         return super.approve(guy, uint(-1));
     }
 
-    function approve(address guy, uint wad) public stoppable returns (bool) {
+    function approve(address guy, uint wad) override public stoppable returns (bool) {
         return super.approve(guy, wad);
     }
 
     function transferFrom(address src, address dst, uint wad)
+        override
         public
         stoppable
         returns (bool)
