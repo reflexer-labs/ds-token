@@ -19,7 +19,7 @@ pragma solidity >=0.4.23;
 
 import "ds-test/test.sol";
 
-import "./token.sol";
+import "../token.sol";
 
 contract TokenUser {
     DSToken  token;

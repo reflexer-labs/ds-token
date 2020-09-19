@@ -22,7 +22,6 @@ import "ds-stop/stop.sol";
 import "./base.sol";
 
 contract DSToken is DSTokenBase(0), DSStop {
-
     bytes32  public  symbol;
     uint256  public  decimals = 18; // standard token precision. override to customize
 

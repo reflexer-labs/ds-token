@@ -19,7 +19,7 @@ pragma solidity >=0.4.23;
 
 import "ds-test/test.sol";
 
-import "./base.sol";
+import "../base.sol";
 
 contract TokenUser {
     ERC20  token;
@@ -152,4 +152,3 @@ contract DSTokenBaseTest is DSTest {
         token.transferFrom(user1, self, 21);
     }
 }
-
