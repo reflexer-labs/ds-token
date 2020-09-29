@@ -7,7 +7,7 @@
 _An ERC20 Token with wholesome memes_
 
 Provides a standard [ERC20] token interface plus [DSAuth]-protected
-`mint` and `burn` functions; binary approval via `MAX_UINT`; as well as
+`mint` and `burn` functions; binary approval via `MAX_UINT`; delegation capabilities; as well as
 `push`, `pull` and `move` aliases for `transferFrom` operations.
 
 [ERC20]: https://theethereum.wiki/w/index.php/ERC20_Token_Standard
