@@ -36,3 +36,9 @@ approval)
 #### `move`
 transfer an amount from a given `src` address to a given `dst` address (requires
 trust or approval)
+
+#### `delegate`
+delegate votes from `msg.sender` to `delegatee`
+
+#### `delegateBySig`
+delegates votes from signatory to `delegatee`
