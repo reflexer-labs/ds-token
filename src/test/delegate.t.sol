@@ -21,6 +21,11 @@ import "ds-test/test.sol";
 
 import "../delegate.sol";
 
+abstract contract Hevm {
+    function warp(uint) virtual public;
+    function roll(uint) virtual public;
+}
+
 contract TokenUser {
     DSDelegateToken  token;
 
@@ -93,6 +98,10 @@ contract TokenUser {
         token.burn(guy, wad);
     }
 
+    function doDelegate(address to) public {
+        token.delegate(to);
+    }
+
 }
 
 contract DSDelegateTokenTest is DSTest {
@@ -101,14 +110,21 @@ contract DSDelegateTokenTest is DSTest {
     DSDelegateToken token;
     address user1;
     address user2;
+    address user3;
     address self;
+    Hevm hevm;
 
     function setUp() public {
         token = createToken();
         token.mint(initialBalance);
         user1 = address(new TokenUser(token));
         user2 = address(new TokenUser(token));
+        user3 = address(new TokenUser(token));
         self = address(this);
+
+        // init hevm
+        hevm = Hevm(0x7109709ECfa91a80626fF3989D68f67F5b1DD12D);
+        hevm.warp(0);
     }
 
     function createToken() internal returns (DSDelegateToken) {
@@ -375,5 +391,141 @@ contract DSDelegateTokenTest is DSTest {
         token.push(user1, 1);
         TokenUser(user1).doApprove(user2);
         token.transferFrom(user1, user2, 1);
+    }
+
+    // delegation tests
+    // testing checkpoints
+    function testCheckpoints() public {
+        token.transfer(user1, 100); // user1 = delegator
+        assertEq(uint256(token.numCheckpoints(user2)), 0);
+
+        hevm.roll(1);
+
+        TokenUser(user1).doDelegate(user2);
+        assertEq(uint256(token.numCheckpoints(user2)), 1);
+
+        hevm.roll(2);
+
+        TokenUser(user1).doTransfer(user3, 10);
+        assertEq(uint256(token.numCheckpoints(user2)), 2);
+
+        hevm.roll(3);
+
+        TokenUser(user1).doTransfer(user3, 10);
+        assertEq(uint256(token.numCheckpoints(user2)), 3);
+
+        hevm.roll(4);
+
+        token.transfer(user1, 20);
+        assertEq(uint256(token.numCheckpoints(user2)), 4);
+
+        (uint blockNumber, uint votes) = token.checkpoints(user2, 0);
+        assertEq(votes, 100);
+        assertEq(blockNumber, 1);
+        (blockNumber, votes) = token.checkpoints(user2, 1);
+        assertEq(votes, 90);
+        assertEq(blockNumber, 2);
+        (blockNumber, votes) = token.checkpoints(user2, 2);
+        assertEq(votes, 80);
+        assertEq(blockNumber, 3);
+        (blockNumber, votes) = token.checkpoints(user2, 3);
+        assertEq(votes, 100);
+        assertEq(blockNumber, 4);
+    }
+
+
+    // only one checkpoint per block
+    function testOneCheckpointPerBlock() public {
+        token.transfer(user1, 100); // user1 = delegator
+        assertEq(uint256(token.numCheckpoints(user2)), 0);
+
+        hevm.roll(1);
+
+        TokenUser(user1).doDelegate(user2);
+        TokenUser(user1).doTransfer(user3, 10);
+        TokenUser(user1).doTransfer(user3, 10);
+        assertEq(uint256(token.numCheckpoints(user2)), 1);
+
+        hevm.roll(2);
+
+        assertEq(uint256(token.numCheckpoints(user2)), 1);
+
+        (uint blockNumber, uint votes) = token.checkpoints(user2, 0);
+        assertEq(votes, 80);
+        assertEq(blockNumber, 1);
+        (blockNumber, votes) = token.checkpoints(user2, 1);
+        assertEq(votes, 0);
+        assertEq(blockNumber, 0);
+
+        token.transfer(user1, 20);
+        assertEq(uint256(token.numCheckpoints(user2)), 2);
+        (blockNumber, votes) = token.checkpoints(user2, 1);
+        assertEq(votes, 100);
+        assertEq(blockNumber, 2);
+    }
+
+    // get Prior votes
+    function testFailPriorVotesInvalidBlock() public {
+        token.getPriorVotes(user1, block.number + 1);
+    }
+
+    function testPriorVotesReturnsZeroForNoCheckpoints() public {
+        hevm.roll(1);
+        assertEq(token.getPriorVotes(user2, 0), 0);
+    }
+
+    function testPriorVotesReturnsLatestCheckpoint() public {
+        token.transfer(user1, 100); // user1 = delegator
+        assertEq(uint256(token.numCheckpoints(user2)), 0);
+
+        hevm.roll(1);
+
+        TokenUser(user1).doDelegate(user2);
+        
+        hevm.roll(5);
+        assertEq(token.getPriorVotes(user2, 1), 100);
+        assertEq(token.getPriorVotes(user2, 4), 100);
+    }
+
+    function testPriorVotesReturnsZeroIfNoCheckpoints() public {
+        token.transfer(user1, 100); // user1 = delegator
+        assertEq(uint256(token.numCheckpoints(user2)), 0);
+
+        hevm.roll(1);
+
+        TokenUser(user1).doDelegate(user2);
+        
+        hevm.roll(5);
+        assertEq(token.getPriorVotes(user2, 0), 0);
+        assertEq(token.getPriorVotes(user2, 3), 100);
+    }
+
+    function testPriorVotesReturnsCorrectVotingBalance() public {
+        token.transfer(user1, 100); // user1 = delegator
+        assertEq(uint256(token.numCheckpoints(user2)), 0);
+
+        hevm.roll(1);
+        TokenUser(user1).doDelegate(user2);
+        
+        hevm.roll(3);
+        TokenUser(user1).doTransfer(user3, 10);
+
+        hevm.roll(5);
+        TokenUser(user1).doTransfer(user3, 10);
+
+        hevm.roll(7);
+        TokenUser(user3).doTransfer(user1, 20);
+
+        hevm.roll(9);
+
+        assertEq(token.getPriorVotes(user2, 0), 0);
+        assertEq(token.getPriorVotes(user2, 1), 100);
+        assertEq(token.getPriorVotes(user2, 2), 100);
+        assertEq(token.getPriorVotes(user2, 3), 90);
+        assertEq(token.getPriorVotes(user2, 4), 90);
+        assertEq(token.getPriorVotes(user2, 5), 80);
+        assertEq(token.getPriorVotes(user2, 6), 80);
+        assertEq(token.getPriorVotes(user2, 7), 100);
+        assertEq(token.getPriorVotes(user2, 8), 100);
     }
 }
