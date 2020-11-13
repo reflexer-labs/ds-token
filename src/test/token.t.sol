@@ -61,10 +61,6 @@ contract TokenUser {
         return token.balanceOf(who);
     }
 
-    function doSetName(bytes32 name) public {
-        token.setName(name);
-    }
-
     function doApprove(address guy)
         public
         returns (bool)
@@ -112,7 +108,7 @@ contract DSTokenTest is DSTest {
     }
 
     function createToken() internal returns (DSToken) {
-        return new DSToken("TST");
+        return new DSToken("TST", "TST");
     }
 
     function testSetupPrecondition() public {
@@ -295,17 +291,6 @@ contract DSTokenTest is DSTest {
     function testFailTrustWhenStopped() public {
         token.stop();
         token.approve(user1);
-    }
-
-
-    function testSetName() public logs_gas {
-        assertEq(token.name(), "");
-        token.setName("Test");
-        assertEq(token.name(), "Test");
-    }
-
-    function testFailSetName() public logs_gas {
-        TokenUser(user1).doSetName("Test");
     }
 
     function testFailUntrustedTransferFrom() public {

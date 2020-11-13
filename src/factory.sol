@@ -7,10 +7,9 @@ contract DSTokenFactory {
     event LogMake(address indexed owner, address token);
 
     function make(
-        bytes32 symbol, bytes32 name
+        string memory symbol, string memory name
     ) public returns (DSToken result) {
-        result = new DSToken(symbol);
-        result.setName(name);
+        result = new DSToken(name, symbol);
         result.setOwner(msg.sender);
         emit LogMake(msg.sender, address(result));
     }
@@ -20,10 +19,9 @@ contract DSDelegateTokenFactory {
     event LogMake(address indexed owner, address token);
 
     function make(
-        bytes32 symbol, bytes32 name
+        string memory symbol, string memory name
     ) public returns (DSDelegateToken result) {
-        result = new DSDelegateToken(symbol);
-        result.setName(name);
+        result = new DSDelegateToken(name, symbol);
         result.setOwner(msg.sender);
         emit LogMake(msg.sender, address(result));
     }

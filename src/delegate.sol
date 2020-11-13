@@ -6,7 +6,8 @@ import "./base.sol";
 
 contract DSDelegateToken is DSTokenBase(0), DSStop {
     // --- Variables ---
-    bytes32 public symbol;
+    string public symbol;
+    string public name;
     /// @notice Standard token precision. Override to customize
     uint256 public decimals = 18;
     /// @notice A record of each accounts delegate
@@ -41,7 +42,8 @@ contract DSDelegateToken is DSTokenBase(0), DSStop {
     /// @notice An event that's emitted when a delegate account's vote balance changes
     event DelegateVotesChanged(address indexed delegate, uint previousBalance, uint newBalance);
 
-    constructor(bytes32 symbol_) public {
+    constructor(string memory name_, string memory symbol_) public {
+        name   = name_;
         symbol = symbol_;
     }
 
@@ -287,16 +289,5 @@ contract DSDelegateToken is DSTokenBase(0), DSStop {
         uint256 chainId;
         assembly { chainId := chainid() }
         return chainId;
-    }
-
-    // Optional token name
-    bytes32 public name = "";
-
-    /**
-    * @notice Set a new name for the token
-    * @param name_ New token name
-    **/
-    function setName(bytes32 name_) public auth {
-        name = name_;
     }
 }

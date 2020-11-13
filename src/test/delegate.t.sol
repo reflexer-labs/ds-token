@@ -66,10 +66,6 @@ contract TokenUser {
         return token.balanceOf(who);
     }
 
-    function doSetName(bytes32 name) public {
-        token.setName(name);
-    }
-
     function doApprove(address guy)
         public
         returns (bool)
@@ -97,11 +93,9 @@ contract TokenUser {
     function doBurn(address guy, uint wad) public {
         token.burn(guy, wad);
     }
-
     function doDelegate(address to) public {
         token.delegate(to);
     }
-
 }
 
 contract DSDelegateTokenTest is DSTest {
@@ -128,7 +122,7 @@ contract DSDelegateTokenTest is DSTest {
     }
 
     function createToken() internal returns (DSDelegateToken) {
-        return new DSDelegateToken("TST");
+        return new DSDelegateToken("TST", "TST");
     }
 
     function testSetupPrecondition() public {
@@ -313,17 +307,6 @@ contract DSDelegateTokenTest is DSTest {
         token.approve(user1);
     }
 
-
-    function testSetName() public logs_gas {
-        assertEq(token.name(), "");
-        token.setName("Test");
-        assertEq(token.name(), "Test");
-    }
-
-    function testFailSetName() public logs_gas {
-        TokenUser(user1).doSetName("Test");
-    }
-
     function testFailUntrustedTransferFrom() public {
         assertEq(token.allowance(self, user2), 0);
         TokenUser(user1).doTransferFrom(self, user2, 200);
@@ -481,7 +464,7 @@ contract DSDelegateTokenTest is DSTest {
         hevm.roll(1);
 
         TokenUser(user1).doDelegate(user2);
-        
+
         hevm.roll(5);
         assertEq(token.getPriorVotes(user2, 1), 100);
         assertEq(token.getPriorVotes(user2, 4), 100);
@@ -494,7 +477,7 @@ contract DSDelegateTokenTest is DSTest {
         hevm.roll(1);
 
         TokenUser(user1).doDelegate(user2);
-        
+
         hevm.roll(5);
         assertEq(token.getPriorVotes(user2, 0), 0);
         assertEq(token.getPriorVotes(user2, 3), 100);
@@ -506,7 +489,7 @@ contract DSDelegateTokenTest is DSTest {
 
         hevm.roll(1);
         TokenUser(user1).doDelegate(user2);
-        
+
         hevm.roll(3);
         TokenUser(user1).doTransfer(user3, 10);
 
