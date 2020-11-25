@@ -1,12 +1,13 @@
 pragma solidity >=0.5.13;
-// pragma experimental ABIEncoderV2;
 
 import "ds-stop/stop.sol";
 import "./base.sol";
 
 contract DSDelegateToken is DSTokenBase(0), DSStop {
     // --- Variables ---
+    // @notice The coin's symbol
     string public symbol;
+    // @notice The coin's name
     string public name;
     /// @notice Standard token precision. Override to customize
     uint256 public decimals = 18;

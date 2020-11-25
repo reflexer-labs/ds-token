@@ -22,9 +22,12 @@ import "ds-stop/stop.sol";
 import "./base.sol";
 
 contract DSToken is DSTokenBase(0), DSStop {
-    string  public symbol;
-    string  public name;
-    uint256 public decimals = 18; // standard token precision. override to customize
+    // @notice The coin's symbol
+    string public symbol;
+    // @notice The coin's name
+    string public name;
+    // @notice Standard token precision. override to customize
+    uint256 public decimals = 18;
 
     constructor(string memory name_, string memory symbol_) public {
         name   = name_;
