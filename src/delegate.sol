@@ -10,7 +10,7 @@ contract DSDelegateToken is DSTokenBase(0), DSStop {
     // @notice The coin's name
     string public name;
     /// @notice Standard token precision. Override to customize
-    uint256 public decimals = 18;
+    uint8 public decimals = 18;
     /// @notice A record of each accounts delegate
     mapping (address => address) public delegates;
     /// @notice A record of votes checkpoints for each account, by index
